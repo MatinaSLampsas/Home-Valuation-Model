@@ -1,0 +1,105 @@
+---
+title: "Presentation"
+date: "Nov 1, 2024"
+author: "Matina Lampsas"
+format: 
+  html:
+    embed-resources: true
+    code-tools: true
+    toc: true
+    code-fold: show
+editor: 
+  visual: true
+  markdown: 
+    wrap: 72
+markdown: 
+  wrap: 72
+execute: 
+  error: true
+  echo: true
+  message: false
+  warning: false
+---
+
+```{r}
+
+library(tidyverse)
+library(readxl)
+
+df <- read_xlsx("data/SLO_House_Price_ZipCode.xlsx")
+# df_2023 <- read_csv("data/Cleaned_SLO County Sales 2023.csv")
+# df_2024 <- read_csv("data/Cleaned_SLO County Sales 2024.csv")
+```
+
+```{r}
+# Plot histogram for all houses
+# Plot histogram for all houses with median line
+# Histogram of Home Age by CITY with NA filtering in the pipeline
+df %>%
+  filter(!is.na(CITY), !is.na(Age), !is.na(Adjusted_Price)) %>%
+  ggplot(aes(x = Adjusted_Price)) +
+  geom_histogram(binwidth = 5, color = "black", alpha = 0.7) +
+  labs(
+    title = "Histogram of Home Age by City",
+    x = "Home Age (Years)",
+    y = "Frequency"
+  ) +
+  theme_minimal() +
+  theme(
+    legend.position = "none",
+    strip.text = element_text(size = 10, face = "bold"),  # Make city labels bold
+    plot.title = element_text(size = 14, face = "bold", hjust = 0.5),  # Center and bold title
+    axis.text = element_text(size = 10)
+  )
+```
+
+
+```{r}
+# Bar plot of median home age by CITY with NA filtering in the pipeline
+df %>%
+  filter(!is.na(CITY), !is.na(Age)) %>%
+  group_by(CITY) %>%
+  summarise(Median_Age = median(Age, na.rm = TRUE)) %>%
+  ggplot(aes(x = reorder(CITY, Median_Age), y = Median_Age)) +
+  geom_bar(stat = "identity", fill = "skyblue", color = "black") +
+  coord_flip() +
+  labs(title = "Median Home Age by City", x = "City", y = "Median Age") +
+  theme_minimal()
+```
+```{r}
+# Bar Plot of Median Home Price by City
+df %>%
+  group_by(CITY) %>%
+  summarise(Median_Price = median(Adjusted_Price, na.rm = TRUE)) %>%
+  ggplot(aes(x = reorder(CITY, Median_Price), y = Median_Price)) +
+  geom_bar(stat = "identity", fill = "skyblue", color = "black") +
+  coord_flip() +
+  labs(title = "Median Home Price by City", x = "City", y = "Median Price") +
+  theme_minimal()
+```
+```{r}
+# Define the linear model with the specified variables
+# + I(Home_Size^2) + Lot_Size + Age +
+#               Bedrooms + Ba_Full + Ba_Half + Ba3_4 +
+#               + Garage.Spaces + Pool +
+#               dist_closest_elementary + dist_closest_highschool + dist_closest_middle +
+#               distance_to_coast + violent_crime_rate + Avg_High_Temp,
+
+
+
+model <- lm(Adjusted_Price ~ Home_Size + Age + Bedrooms + Ba_Full + Ba_Half + Ba3_4 +Garage.Spaces + Pool ,data = df)
+
+# Display the model summary
+summary(model)
+```
+
+
+
+
+
+
+
+
+
+
+

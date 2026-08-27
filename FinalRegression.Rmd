@@ -1,0 +1,637 @@
+---
+title: "Summer Undergraduate Research Project"
+subtitle: "Regressions"
+authors: "Matina Lampsas & Manning Kalish"
+output:
+  html_document:
+    fig_caption: yes
+    toc: yes
+    toc_depth: 3
+    toc_float: yes
+    code-fold: True
+editor: source
+execute: 
+  error: true
+  echo: true
+  message: false
+  warning: false
+---
+
+```{r setup}
+library(tidyverse)
+library(readxl)
+```
+
+```{r}
+repeat_sales <- read_csv(here::here("data","repeat_sales_new.csv" ) )
+recent_sales <- read_csv(here::here("data","recent_sales_new.csv" ))
+```
+
+```{r}
+# recent_sales <- recent_sales %>% 
+#   mutate(avg_temp = (Avg_High_Temp+ Avg_Low_Temp)/2) %>% 
+#   mutate(Pool = if_else(Pool.Private.YN == "Y",1,0)) %>% 
+#     separate(col = Sub.Type, 
+#            into = c("House_Type", "D/A"), 
+#            sep = "/")
+```
+
+```{r}
+# recent_sales <- recent_sales %>% 
+#   mutate(Detached = if_else(`D/A` == "D",1,0)) %>% 
+#   mutate(SFR = if_else(`House_Type` == "SFR",1,0) )
+
+```
+
+```{r}
+
+# # Fit the linear regression model + dist_closest_elementary, + dist_downtownavg_temp  +
+# model_3 <- lm(Adjusted_Price ~ Bedrooms + Full_Ba + `3/4Ba` +Half_Ba+ Sqft_value +  Garage.Spaces + Avg_High_Temp + Avg_Low_Temp  +  dist_closest_elementary  + dist_downtown + Pool + distance_to_coast  +  Age + Lot_Sqft +Detached + SFR, data = recent_sales , na.action = na.omit)
+# 
+# # Print the summ
+# 
+# summary(model_3)
+# 
+# 
+# #ones i took out: 
+# 
+# # # avg_temp ++
+# #             CITY_Paso_Robles + CITY_San_Luis_Obispo + CITY_Atascadero + 
+# #             CITY_Arroyo_Grande + CITY_Nipomo + CITY_Cambria + CITY_Morro_Bay + CITY_Grover_Beach + +
+#             # distance_to_coast +
+# # Fit the linear regression model + dist_closest_elementary, + dist_downtownavg_temp  +
+# model_2 <- lm(Adjusted_Price ~ Bedrooms + Full_Ba + `3/4Ba` +Half_Ba+ Sqft_value +  Garage.Spaces + Avg_High_Temp + Avg_Low_Temp  +  dist_closest_elementary  + dist_downtown + Pool + distance_to_coast  +  Age + Lot_Sqft +Detached + SFR, data = recent_sales , na.action = na.omit)
+# 
+# # Print the summary of the model
+# summary(model_2)
+# ```
+# ```{r}
+# # Took out:  dist_closest_elementary +
+# 
+# recent_sales_filtered <- recent_sales %>% 
+#   filter(CITY != "Bradley",
+#          CITY != "Shandon",
+#          CITY != "Templeton",
+#          CITY != "San Miguel") %>% 
+#   rename(Home_Sqft = Sqft_value)
+# 
+# model <- lm(Adjusted_Price ~ Bedrooms + Full_Ba + `3/4Ba` + Half_Ba  + Home_Sqft + Lot_Sqft+ Garage.Spaces +avg_temp + violent_crime_rate + property_crime_rate + total_crime_rate + distance_to_coast + dist_downtown + dist_calpoly*CITY_San_Luis_Obispo  + Age + Pool + Detached + SFR,
+#             data = recent_sales_filtered,  na.action = na.omit)
+# 
+# summary(model)
+# 
+# 
+# 
+# 
+# model_2 <- lm(Adjusted_Price ~ Bedrooms + Full_Ba + `3/4Ba` + Half_Ba  + Sqft_value + Lot_Sqft+ Garage.Spaces +avg_temp + violent_crime_rate + property_crime_rate + total_crime_rate + distance_to_coast + dist_downtown + dist_closest_elementary+ dist_closest_middleschool + dist_calpoly*CITY_San_Luis_Obispo  + Age + Pool + Detached + SFR,
+#             data = recent_sales,  na.action = na.omit)
+# 
+# summary(model_2)
+# #vif(model)
+```
+
+```{r}
+recent_sales <- recent_sales %>%
+  rename(Home_Sqft = Sqft_value)
+```
+
+```{r}
+model_4 <- lm(Adjusted_Price ~ Bedrooms + Full_Ba + `3/4Ba` + Half_Ba  + Home_Sqft + Lot_Sqft+ Garage.Spaces+ avg_temp + property_crime_rate + dist_downtown +I(dist_calpoly*CITY_San_Luis_Obispo)  + Age + Pool + Detached + SFR + avg_temp ,
+            data = recent_sales,  na.action = na.omit)
+
+
+
+summary(model_4)
+```
+
+```{r}
+
+library(sjPlot)
+
+recent_sales <- recent_sales %>%
+  rename(Three_Quarter_Bath = `3/4Ba`)
+
+```
+
+```{r}
+# Install and load necessary package
+# install.packages("sjPlot")
+# library(sjPlot)
+
+# Custom labels for the variables
+labels <- list(
+  Bedrooms = "Number of Bedrooms",
+  Full_Ba = "Full Bathrooms",
+  Three_Quarter_Bath = "Three-Quarter Bathrooms",
+  Half_Ba = "Half Bathrooms",
+  Home_Sqft = "Home Size (Sqft)",
+  Lot_Sqft = "Lot Size (Sqft)",
+  Garage.Spaces = "Garage Spaces",
+  avg_temp = "Average Temperature",
+  property_crime_rate = "Property Crime Rate",
+  dist_downtown = "Distance to Downtown",
+  `I(dist_calpoly * CITY_San_Luis_Obispo)` = "Interaction: Distance to Cal Poly within SLO",
+  Age = "Home Age",
+  Pool = "Pool (Yes/No)",
+  Detached = "Detached Home (Yes/No)",
+  SFR = "Single-Family Residence (Yes/No)"
+)
+
+# Fit the model  avg_temp + + Pool + avg_temp dist_downtown + 
+              # I(dist_calpoly * CITY_San_Luis_Obispo)  Three_Quarter_Bath +
+model_4 <- lm(Adjusted_Price ~ Bedrooms + Full_Ba + Half_Ba + Home_Sqft + Lot_Sqft + 
+              Garage.Spaces + property_crime_rate +  + Age  + Detached  ,
+              data = recent_sales, na.action = na.omit)
+
+# Generate the professional table with custom labels and adjusted R-squared
+tab_model(model_4, show.ci = FALSE, show.se = FALSE, dv.labels = "Adjusted Price", pred.labels = labels)
+
+```
+
+$\text{Price} = \text{Constant} + \beta_1 \text{Home Characteristics} + \beta_2 \text{Location Features} + \epsilon $ 
+
+
+Price = Constant + \beta_{1} Home Characteristics + \beta_{2} Location Features + \epsilon
+
+```{r}
+tab_model(model_4, show.ci = FALSE, show.se = FALSE, dv.labels = "Adjusted Price", pred.labels = labels,
+          CSS = list(
+            "table" = "font-size: 10px;"  # Adjust font size here
+          ))
+```
+
+
+```{r}
+# Generate table with HTML font size and reduced row spacing
+tab_model(model_4, show.ci = FALSE, show.se = FALSE, 
+          show.p = TRUE, show.r2 =  TRUE, 
+          dv.labels = "Adjusted Price ($)", pred.labels = labels,
+          CSS = list(
+            "table" = "font-size: 12px; width: 1000px; height: 300; margin: 0 auto; line-height: 1.0;",  # Adjust line-height here
+            "th" = "padding: 0px; text-align: left;",  # Reduce header padding
+            "td" = "padding: 0px;"   # Reduce cell padding
+          ))
+
+```
+
+```{r}
+# tab_model(model_4, show.ci = FALSE, show.se = FALSE, 
+#           show.p = TRUE, show.r2 = TRUE, 
+#           dv.labels = "Adjusted Price ($)", pred.labels = labels,
+#           file = "regression_table.png")
+```
+
+```{r}
+# Load necessary libraries
+library(sjPlot)
+
+# Create a data frame with your regression results
+results <- data.frame(
+  Predictors = c(
+    "(Intercept)", 
+    "Number of Bedrooms", 
+    "Full Bathrooms", 
+    "Three-Quarter Bathrooms", 
+    "Half Bathrooms", 
+    "Home Size (Sqft)", 
+    "Lot Size (Sqft)", 
+    "Garage Spaces", 
+    "Average Temperature", 
+    "Property Crime Rate", 
+    "Distance to Downtown", 
+    "Interaction: Distance to Cal Poly and City", 
+    "Home Age", 
+    "Pool (Yes/No)", 
+    "Detached Home (Yes/No)", 
+    "Single-Family Residence (Yes/No)",
+    "Observations"
+  ),
+  Estimates = c(
+    -182234.69, 
+    -79740.75, 
+    174958.54, 
+    229321.50, 
+    132038.26, 
+    295.85, 
+    0.07, 
+    1285.24, 
+    -1412.45, 
+    8114.66, 
+    14.03, 
+    30.47, 
+    1976.28, 
+    3657.67, 
+    96331.47, 
+    169319.97,
+    8936
+  ),
+  p_value = c(
+    0.003, 
+    "<0.001", 
+    "<0.001", 
+    "<0.001", 
+    "<0.001", 
+    "<0.001", 
+    "<0.001", 
+    0.003, 
+    0.096, 
+    "<0.001", 
+    0.409, 
+    0.521, 
+    "<0.001", 
+    0.867, 
+    "<0.001", 
+    "<0.001", 
+    NA  # For the Observations row
+  )
+)
+
+# # Generate the table with kableExtra
+# kable(results, format = "html", 
+#       col.names = c("Predictors", "Estimates", "p-value"),
+#       caption = "Regression Output for Adjusted Price ($)") %>%
+#   kable_styling(full_width = FALSE, position = "center", font_size = 12) %>%
+#   row_spec(nrow(results), bold = TRUE, color = "blue") %>%
+#   add_header_above(c(" " = 1, "Adjusted Price ($)" = 2))
+
+```
+
+```{r}
+# recent_sales$predictions <- predict(model)
+```
+
+```{r}
+model_5 <- lm(Adjusted_Price ~ Bedrooms + Home_Sqft + distance_to_coast + Age + dist_downtown + dist_closest_highschool + dist_closest_middleschool + dist_closest_elementary + Garage.Spaces + total_crime_rate + Full_Ba + Pool + Detached + SFR + avg_temp ,
+            data = recent_sales,  na.action = na.omit)
+
+
+
+summary(model_5)
+```
+
+```{r}
+library(stargazer)
+stargazer(model_5, type = "text", title = "Regression Results",
+          align = TRUE, no.space = TRUE, column.sep.width = "2pt")
+```
+
+```{r}
+library(knitr)
+```
+
+```{r}
+library(ggplot2)
+library(ggmap)
+library(dplyr)
+```
+
+```{r}
+# # Load necessary libraries
+# library(ggmap)
+# library(ggplot2)
+# 
+# # Define the center of the map based on your home's coordinates
+# map_center <- c(lon = mean(recent_sales$Longitude), lat = mean(recent_sales$Latitude))
+# 
+# # Use a Stamen map with correct map type
+# basemap <- get_stadiamap(bbox = c(left = min(recent_sales$Longitude) - 0.02, 
+#                                   bottom = min(recent_sales$Latitude) - 0.02, 
+#                                   right = max(recent_sales$Longitude) + 0.02, 
+#                                   top = max(recent_sales$Latitude) + 0.02), 
+#                          zoom = 13, maptype = "stamen_terrain")
+# 
+# # Plot the basemap with home locations
+# ggmap(basemap) +
+#   geom_point(data = recent_sales, aes(x = Longitude, y = Latitude), 
+#              color = "red", size = 3, alpha = 0.7) +
+#   labs(title = "Map of Homes", x = "Longitude", y = "Latitude") +
+#   theme_minimal()
+
+```
+
+```{r}
+#write.csv(recent_sales, "C:/Users/matin/OneDrive/Matina/Cal Poly/SURP/recent_sales.csv", row.names = FALSE)
+```
+
+```{r}
+# Create a compact regression table with a custom dependent variable label
+stargazer(model_4, type = "text", title = "Hedonic Regression Results", 
+          align = TRUE, no.space = TRUE, report = "vc*", single.row = TRUE,
+          dep.var.labels = "Adjusted Price (Dollars)")
+
+```
+
+```{r}
+stargazer(model_4, type = "text", title = "Hedonic Regression Output", 
+          align = TRUE, no.space = TRUE, report = "vc*", single.row = TRUE)
+```
+
+```{r}
+# Load necessary library
+# library(stargazer)
+# 
+# # Corrected settings for displaying regression results with stargazer
+# stargazer(model_4, type = "text")
+# #           title = "Regression Results",
+# #           intercept.bottom = FALSE,
+# #           single.row = TRUE,
+# #           star.char.levels = c("***", "**", "*"),
+# #           star.cutoffs = c(0.01, 0.05, 0.1),  # Set in decreasing order correctly
+# #           out.header = FALSE,
+# #           digits=2,
+# #           dep.var.caption="Dependent variable: Adjusted Price",
+# #           dep.var.labels.include = FALSE,
+# #           covariate.labels=c("Bedrooms", "Home SqFt", "Distance to Coast", "Age", 
+# #                              "Distance to Nearest High School", "Distance to Nearest Middle School",
+# #                              "Distance to Nearest Elementary School", "Garage Spaces", 
+# #                              "Total Crime Rate", "Full Bathrooms", "Pool", "Detached",
+# #                              "Single Family Residence", "Average Temperature"),
+# #           omit.stat = c("f", "ser"),
+# #           column.labels = "Estimates",
+# #           notes.append = FALSE,
+# #           notes = "Significance levels: *** p<0.01, ** p<0.05, * p<0.1",
+# #           digit.separator="",  # Remove digit separators for simplicity
+# #           digits.extra = 0,    # Adjust number of digits after decimal
+# #           scientific = FALSE)  # Avoid scientific notation
+
+
+```
+
+```{r}
+# Ensure predictions are generated for the same subset of data
+#predictions <- predict(model, newdata = recent_sales)
+```
+
+```{r}
+# Check if the number of rows match
+# if (length(predictions) != nrow(recent_sales)) {
+#   stop("Number of rows in predictions does not match the number of rows in the data.")
+# }
+```
+
+```{r}
+# Add predictions and residuals to the data frame
+# recent_sales <- recent_sales %>%
+#   mutate(predictions = predictions,
+#          residuals = Adjusted_Price - predictions)
+```
+
+```{r}
+#library(pheatmap)  # For heatmap
+
+```
+
+```{r}
+# Bin the predictor variables (e.g., distance to downtown and distance to Cal Poly)
+# recent_sales <- recent_sales %>%
+#   mutate(dist_downtown_bin = cut(dist_downtown, breaks = 10, labels = FALSE),
+#          dist_calpoly_bin = cut(dist_calpoly, breaks = 10, labels = FALSE))
+# 
+# # Aggregate residuals for each combination of bins
+# heatmap_data <- recent_sales %>%
+#   group_by(dist_downtown_bin, dist_calpoly_bin) %>%
+#   summarise(mean_residual = mean(residuals, na.rm = TRUE)) %>%
+#   ungroup()
+# 
+# # Reshape data for heatmap
+# heatmap_data_wide <- heatmap_data %>%
+#   pivot_wider(names_from = dist_calpoly_bin, values_from = mean_residual, names_prefix = "bin_") %>%
+#   column_to_rownames("dist_downtown_bin")
+# 
+# # Plot heatmap
+# pheatmap(heatmap_data_wide, scale = "none", cluster_rows = FALSE, cluster_cols = FALSE, 
+#          main = "Heatmap of Residuals", color = colorRampPalette(c("blue", "white", "red"))(100))
+# 
+# # Alternatively using ggplot2
+# ggplot(heatmap_data, aes(x = dist_downtown_bin, y = dist_calpoly_bin)) +
+#   geom_tile(aes(fill = mean_residual)) +
+#   scale_fill_viridis_c() +
+#   labs(x = "Distance to Downtown Bin", y = "Distance to Cal Poly Bin", fill = "Mean Residual") +
+#   theme_minimal()
+# ```
+# 
+# 
+# 
+# ```{r}
+# ggplot(recent_sales, aes(x = predictions, y = residuals)) +
+#   geom_point(alpha = 0.5) +
+#   geom_hline(yintercept = 0, linetype = "dashed", color = "red") +
+#   labs(x = "Fitted Values (Predictions)", y = "Residuals", 
+#        title = "Residuals vs. Fitted Values") +
+#   theme_minimal()
+
+```
+
+```{r}
+# library(ggplot2)
+# 
+# # Adjusted axis limits for better visibility
+# ggplot(recent_sales, aes(x = predictions, y = Adjusted_Price)) +
+#   geom_point(alpha = 0.5) +
+#   geom_abline(intercept = 0, slope = 1, color = "red", linetype = "dashed") +
+#   labs(x = "Predicted Values", y = "Actual Values", 
+#        title = "Predicted vs. Actual Values") +
+#   theme_minimal() +
+#   xlim(50000, 5000000) +  # Adjust these limits based on your data range
+#   ylim(50000, 5000000)
+
+
+```
+
+```{r}
+# library(ggplot2)
+# 
+# # Sample data for demonstration
+# set.seed(123)
+# n <- 100
+# actual <- rnorm(n, mean = 100000, sd = 20000)
+# predicted <- actual + rnorm(n, mean = 0, sd = 10000)
+# 
+# # Create a dataframe with actual and predicted values
+# data <- data.frame(Actual = actual, Predicted = predicted)
+# 
+# # Plot
+# ggplot(data, aes(x = Predicted, y = Actual)) +
+#   geom_point(alpha = 0.6) +
+#   geom_abline(intercept = 0, slope = 1, color = "red", linetype = "dashed") +
+#   labs(x = "Predicted Values", y = "Actual Values", 
+#        title = "Predicted vs. Actual Values") +
+#   theme_minimal() +
+#   xlim(min(data$Predicted, data$Actual), max(data$Predicted, data$Actual)) +
+#   ylim(min(data$Predicted, data$Actual), max(data$Predicted, data$Actual))
+
+```
+
+```{r}
+# # Load necessary libraries
+# library(ggplot2)
+# library(dplyr)
+# library(tidyr)
+# 
+# # Assuming you have a data frame `recent_sales`
+# # Fit the model
+# model <- lm(Adjusted_Price ~ Bedrooms + Full_Ba + `3/4Ba` + 
+#              Half_Ba + Sqft_value + Garage.Spaces + avg_temp + 
+#              violent_crime_rate + property_crime_rate + total_crime_rate + 
+#              dist_downtown + dist_calpoly * CITY_San_Luis_Obispo + 
+#              Age + Pool + Detached + SFR, data = recent_sales, na.action = na.omit)
+# 
+# # Predict and compute residuals
+# recent_sales$predictions <- predict(model)
+# recent_sales$residuals <- recent_sales$Adjusted_Price - recent_sales$predictions
+# 
+# # Bin the predictor variables (e.g., distance to downtown)
+# recent_sales <- recent_sales %>%
+#   mutate(dist_downtown_bin = cut(dist_downtown, breaks = 10),
+#          dist_calpoly_bin = cut(dist_calpoly, breaks = 10))
+# 
+# # Aggregate residuals for each combination of bins
+# heatmap_data <- recent_sales %>%
+#   group_by(dist_downtown_bin, dist_calpoly_bin) %>%
+#   summarise(mean_residual = mean(residuals, na.rm = TRUE)) %>%
+#   ungroup()
+# 
+# # Reshape data for heatmap
+# heatmap_data_wide <- heatmap_data %>%
+#   pivot_wider(names_from = dist_calpoly_bin, values_from = mean_residual)
+# 
+# # Plot heatmap
+# ggplot(heatmap_data_wide, aes(x = dist_downtown_bin, y = names(heatmap_data_wide)[-1])) +
+#   geom_tile(aes(fill = mean_residual)) +
+#   scale_fill_viridis_c() +
+#   labs(x = "Distance to Downtown Bin", y = "Distance to Cal Poly Bin", fill = "Mean Residual") +
+#   theme_minimal()
+
+```
+
+```{r}
+# library(ggplot2)
+# 
+# # Assuming your model is named 'model'
+# residuals <- resid(model)
+# fitted_values <- fitted(model)
+# 
+# # Create a data frame for plotting
+# plot_data <- data.frame(Fitted = fitted_values, Residuals = residuals)
+# 
+# 
+# 
+# ggplot(plot_data, aes(x = Fitted, y = Residuals)) +
+#   geom_point() +
+#   geom_smooth(method = "loess", se = FALSE, color = "blue") +
+#   geom_hline(yintercept = 0, linetype = "dashed", color = "red") +
+#   labs(title = "Residuals vs Fitted", x = "Fitted Values", y = "Residuals") +
+#   theme_minimal()
+
+```
+
+```{r}
+# library(car)
+# crPlots(model)
+
+
+```
+
+```{r}
+# ggplot(recent_sales, aes(x = dist_closest_highschool, y = Adjusted_Price)) +
+#   geom_point() +
+#   geom_smooth(method = "loess")
+```
+
+```{r}
+
+# # Assuming 'recent_sales' is your dataframe
+# model <- lm(Adjusted_Price ~ Bedrooms + Full_Ba + `3/4Ba` + Half_Ba  + Sqft_value +
+#              Garage.Spaces + Avg_High_Temp + Avg_Low_Temp + 
+#             poly(dist_closest_highschool,3) + poly(dist_closest_middleschool,3) + poly(dist_closest_elementary,3) +
+#             violent_crime_rate + property_crime_rate + total_crime_rate +
+#             distance_to_coast + dist_downtown + dist_calpoly  + Age + Pool + Detached + SFR,
+#             data = recent_sales,  na.action = na.omit)
+# 
+# summary(model)
+```
+
+```{r}
+# library(car)
+# vif(model)  # Replace 'model' with your model object
+
+```
+
+```{r}
+# # Revised model removing polynomial terms and checking temperature variables
+# model_revised <- lm(Adjusted_Price ~ Bedrooms + Full_Ba + `3/4Ba` + 
+#     Half_Ba + Sqft_value + Garage.Spaces + Avg_High_Temp + Avg_Low_Temp + 
+#     distance_to_coast + dist_downtown + dist_calpoly + Age + Pool + Detached + SFR, 
+#     data = recent_sales, na.action = na.omit)
+# summary(model_revised)
+# 
+# ```
+# ```{r}
+# vif(model_revised)
+```
+
+```{r}
+# # Revised model without 'distance_to_coast'
+# model_final <- lm(Adjusted_Price ~ Bedrooms + Full_Ba + `3/4Ba` + 
+#     Half_Ba + Sqft_value + Garage.Spaces + Avg_High_Temp + Avg_Low_Temp + 
+#     dist_downtown + dist_calpoly + Age + Pool + Detached + SFR, 
+#     data = recent_sales, na.action = na.omit)
+# summary(model_final)
+
+```
+
+```{r}
+# # Model with interaction terms
+# model_with_interactions <- lm(Adjusted_Price ~ Bedrooms + Full_Ba + `3/4Ba` + 
+#     Half_Ba + Home_Sqft + Lot_Sqft + Garage.Spaces + Avg_High_Temp * Pool + Avg_Low_Temp * Pool + 
+#     dist_downtown + dist_calpoly + Age + Detached + SFR, 
+#     data = recent_sales, na.action = na.omit)
+# summary(model_with_interactions)
+
+```
+
+```{r}
+# # Load necessary libraries
+# library(ggplot2)
+# library(reshape2)
+# 
+# # Select relevant columns from the dataframe
+# vars <- c("Bedrooms", "Full_Ba", "3/4Ba", "Half_Ba", "Sqft_value", 
+#           "Garage.Spaces", "Avg_High_Temp", "Avg_Low_Temp", "dist_closest_highschool", 
+#           "dist_closest_middleschool", "violent_crime_rate", "Pool", 
+#           "property_crime_rate", "distance_to_coast", "Age", "Lot_Sqft", "Detached", "SFR")
+# 
+# # Calculate correlation matrix
+# cor_matrix <- cor(recent_sales[, vars], use = "complete.obs")
+# 
+# # Melt the correlation matrix for plotting
+# melted_cor <- melt(cor_matrix)
+# 
+# # Create the heatmap
+# ggplot(data = melted_cor, aes(x = Var1, y = Var2, fill = value)) +
+#   geom_tile() +
+#   scale_fill_gradient2(low = "blue", high = "red", mid = "white", 
+#                        midpoint = 0, limit = c(-1, 1), space = "Lab", 
+#                        name="Correlation") +
+#   theme_minimal() + 
+#   theme(axis.text.x = element_text(angle = 45, vjust = 1, 
+#                                    size = 12, hjust = 1)) +
+#   coord_fixed() +
+#   labs(title = "Heatmap of Variable Correlations",
+#        x = "Variables", y = "Variables")
+
+```
+
+```{r}
+# # Plot the residuals
+# plot(model_2$fitted.values, resid(model_2), 
+#      xlab = "Fitted Values", 
+#      ylab = "Residuals", 
+#      main = "Residuals vs Fitted Values",
+#      pch = 20, col = "blue")
+# abline(h = 0, col = "red", lwd = 2)
+```
+
+```{r}
+#write.csv(recent_sales, file = "recent_sales_new.csv")
+```
